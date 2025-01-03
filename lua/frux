@@ -168,3 +168,53 @@ local function stopAutoClicker()
     end
 end
 
+-- Disable button clicked handler
+disableButton.MouseButton1Click:Connect(function()
+    print("[DEBUG]: Disable button clicked")
+
+    -- Disable the auto clicker
+    autoClickerEnabled = false
+    print("[DEBUG]: Auto clicker disabled")
+
+    -- Update the button text and icon with error handling
+    local success, err = safeCall(function()
+        enableButton.Text = "Enable Auto Clicker"
+        enableButton.ImageColor3 = Color3.new(0, 1, 0) -- Green color for enabled state
+    end)
+
+    if not success then
+        print("[ERROR]: Failed to update button UI - " .. err)
+    end
+
+    -- Stop the auto clicker task if it's running
+    stopAutoClicker()
+end)
+
+-- Enable button clicked handler
+enableButton.MouseButton1Click:Connect(function()
+    print("[DEBUG]: Enable button clicked")
+
+    -- Enable the auto clicker
+    autoClickerEnabled = true
+    print("[DEBUG]: Auto clicker enabled")
+
+    -- Update the button text and icon with error handling
+    local success, err = safeCall(function()
+        enableButton.Text = "Disable Auto Clicker"
+        enableButton.ImageColor3 = Color3.new(1, 0, 0) -- Red color for disabled state
+    end)
+
+    if not success then
+        print("[ERROR]: Failed to update button UI - " .. err)
+    end
+
+    -- Start the auto clicker task
+    startAutoClicker(10)  -- Default to 10 clicks per second
+end)
+
+-- Toggle UI button handler
+toggleButton.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible  -- Toggle visibility
+end)
+
+print("[DEBUG]: Script Loaded")
