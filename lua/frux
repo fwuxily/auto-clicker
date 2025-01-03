@@ -1,0 +1,170 @@
+-- Setup the User Interface elements
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoClickerUI"
+screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+
+-- Create a frame to hold the UI elements
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 300, 0, 400)
+frame.Position = UDim2.new(0.5, -150, 0.5, -200)
+frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+frame.Visible = false  -- Set the frame to be hidden initially
+frame.Parent = screenGui
+
+-- Add a title label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(1, 0, 0, 40)
+titleLabel.Text = "Auto Clicker Settings"
+titleLabel.TextColor3 = Color3.new(1, 1, 1)
+titleLabel.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 24
+titleLabel.Parent = frame
+
+-- Create the enable button
+local enableButton = Instance.new("TextButton")
+enableButton.Size = UDim2.new(1, 0, 0, 50)
+enableButton.Position = UDim2.new(0, 0, 0.1, 0)
+enableButton.Text = "Enable Auto Clicker"
+enableButton.TextColor3 = Color3.new(1, 1, 1)
+enableButton.BackgroundColor3 = Color3.new(0, 1, 0)
+enableButton.Font = Enum.Font.GothamBold
+enableButton.TextSize = 18
+enableButton.Parent = frame
+
+-- Create the disable button
+local disableButton = Instance.new("TextButton")
+disableButton.Size = UDim2.new(1, 0, 0, 50)
+disableButton.Position = UDim2.new(0, 0, 0.2, 0)
+disableButton.Text = "Disable Auto Clicker"
+disableButton.TextColor3 = Color3.new(1, 1, 1)
+disableButton.BackgroundColor3 = Color3.new(1, 0, 0)
+disableButton.Font = Enum.Font.GothamBold
+disableButton.TextSize = 18
+disableButton.Parent = frame
+
+-- Create the clicks per second label
+local clicksPerSecondLabel = Instance.new("TextLabel")
+clicksPerSecondLabel.Size = UDim2.new(1, 0, 0, 40)
+clicksPerSecondLabel.Position = UDim2.new(0, 0, 0.4, 0)
+clicksPerSecondLabel.Text = "Clicks per second: 10"
+clicksPerSecondLabel.TextColor3 = Color3.new(1, 1, 1)
+clicksPerSecondLabel.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+clicksPerSecondLabel.Font = Enum.Font.Gotham
+clicksPerSecondLabel.TextSize = 18
+clicksPerSecondLabel.Parent = frame
+
+-- Create the interval label
+local intervalLabel = Instance.new("TextLabel")
+intervalLabel.Size = UDim2.new(1, 0, 0, 40)
+intervalLabel.Position = UDim2.new(0, 0, 0.6, 0)
+intervalLabel.Text = "Interval: 0.1 seconds"
+intervalLabel.TextColor3 = Color3.new(1, 1, 1)
+intervalLabel.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+intervalLabel.Font = Enum.Font.Gotham
+intervalLabel.TextSize = 18
+intervalLabel.Parent = frame
+
+-- Create the interval slider (custom)
+local sliderBackground = Instance.new("Frame")
+sliderBackground.Size = UDim2.new(1, 0, 0, 10)
+sliderBackground.Position = UDim2.new(0, 0, 0.7, 0)
+sliderBackground.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+sliderBackground.Parent = frame
+
+local intervalSlider = Instance.new("Frame")
+intervalSlider.Size = UDim2.new(0.1, 0, 0, 10)
+intervalSlider.Position = UDim2.new(0, 0, 0, 0)
+intervalSlider.BackgroundColor3 = Color3.new(0, 1, 0)
+intervalSlider.Parent = sliderBackground
+
+-- Function to handle dragging the interval slider
+local intervalDragStart = nil
+local intervalStartPos = nil
+
+intervalSlider.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        intervalDragStart = input.Position
+        intervalStartPos = intervalSlider.Position
+    end
+end)
+
+intervalSlider.InputChanged:Connect(function(input)
+    if intervalDragStart then
+        local delta = input.Position - intervalDragStart
+        local newPos = intervalStartPos.X.Offset + delta.X
+        newPos = math.clamp(newPos, 0, sliderBackground.AbsoluteSize.X - intervalSlider.AbsoluteSize.X)
+        intervalSlider.Position = UDim2.new(0, newPos, 0, 0)
+        -- Update the interval value based on the position
+        intervalLabel.Text = "Interval: " .. tostring(math.round((newPos / sliderBackground.AbsoluteSize.X) * 10) / 10) .. " seconds"
+    end
+end)
+
+intervalSlider.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        intervalDragStart = nil
+    end
+end)
+
+-- Create the toggle button to open/close the UI
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 100, 0, 50)
+toggleButton.Position = UDim2.new(0.5, -50, 0, 20)
+toggleButton.Text = "Toggle UI"
+toggleButton.TextColor3 = Color3.new(1, 1, 1)
+toggleButton.BackgroundColor3 = Color3.new(0.4, 0.4, 0.4)
+toggleButton.Font = Enum.Font.GothamBold
+toggleButton.TextSize = 18
+toggleButton.Parent = screenGui
+
+-- Error handling and debug logging function
+local function safeCall(func, ...)
+    local success, result = pcall(func, ...)
+    if not success then
+        print("[ERROR]: " .. tostring(result))  -- Log the error message if something goes wrong
+    end
+    return success, result
+end
+
+print("[DEBUG]: Script Initialized")
+
+-- Variable to keep track of whether the auto clicker is enabled
+local autoClickerEnabled = false
+local autoClickerTask = nil
+
+-- Function to start the auto clicker with adjustable speed
+local function startAutoClicker(clicksPerSecond)
+    print("[DEBUG]: Starting auto clicker with " .. tostring(clicksPerSecond) .. " clicks per second")
+
+    -- Calculate the interval between clicks based on clicks per second
+    local interval = 1 / clicksPerSecond
+
+    -- Start the click loop
+    local success, err = safeCall(function()
+        while autoClickerEnabled do
+            print("[DEBUG]: Auto-clicking...")  -- Placeholder for actual clicking logic
+            -- Example: game.ReplicatedStorage:FireServer("Click")
+            wait(interval)  -- Wait before the next click
+        end
+    end)
+
+    if not success then
+        print("[ERROR]: Failed to start auto clicker - " .. err)
+    end
+end
+
+-- Function to stop the auto clicker
+local function stopAutoClicker()
+    print("[DEBUG]: Stopping auto clicker")
+    if autoClickerTask then
+        local success, err = safeCall(function()
+            autoClickerTask:Disconnect()  -- Stop the auto-clicker task
+            autoClickerTask = nil
+        end)
+
+        if not success then
+            print("[ERROR]: Failed to stop auto clicker - " .. err)
+        end
+    end
+end
+
