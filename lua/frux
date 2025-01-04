@@ -7,7 +7,7 @@ screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 300, 0, 400)
 frame.Position = UDim2.new(0.5, -150, 0.5, -200)
-frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+frame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)  -- Default dark theme
 frame.Visible = false  -- Set the frame to be hidden initially
 frame.Parent = screenGui
 
@@ -27,7 +27,7 @@ enableButton.Size = UDim2.new(1, 0, 0, 50)
 enableButton.Position = UDim2.new(0, 0, 0.1, 0)
 enableButton.Text = "Enable Auto Clicker"
 enableButton.TextColor3 = Color3.new(1, 1, 1)
-enableButton.BackgroundColor3 = Color3.new(0, 1, 0) -- Green color for enabled state
+enableButton.BackgroundColor3 = Color3.new(0, 1, 0) -- Green for enabled state
 enableButton.Font = Enum.Font.GothamBold
 enableButton.TextSize = 18
 enableButton.Parent = frame
@@ -38,7 +38,7 @@ disableButton.Size = UDim2.new(1, 0, 0, 50)
 disableButton.Position = UDim2.new(0, 0, 0.2, 0)
 disableButton.Text = "Disable Auto Clicker"
 disableButton.TextColor3 = Color3.new(1, 1, 1)
-disableButton.BackgroundColor3 = Color3.new(1, 0, 0) -- Red color for disabled state
+disableButton.BackgroundColor3 = Color3.new(1, 0, 0) -- Red for disabled state
 disableButton.Font = Enum.Font.GothamBold
 disableButton.TextSize = 18
 disableButton.Parent = frame
@@ -144,7 +144,9 @@ local function startAutoClicker(clicksPerSecond)
     autoClickerTask = coroutine.create(function()
         while autoClickerEnabled do
             print("[DEBUG]: Auto-clicking...")  -- Placeholder for actual clicking logic
-            -- Example: game.ReplicatedStorage:FireServer("Click")
+            if clickTarget then
+                clickTarget:Click()
+            end
             wait(interval)  -- Wait before the next click
         end
     end)
@@ -198,3 +200,31 @@ enableButton.MouseButton1Click:Connect(function()
     local success, err = safeCall(function()
         enableButton.Text = "Disable Auto Clicker"
         enableButton.BackgroundColor3 = Color3.new(1, 0, 0) -- Red color for disabled state
+    end)
+
+    if not success then
+        print("[ERROR]: Failed to update button UI - " .. err)
+    end
+
+    -- Start the auto clicker task
+    startAutoClicker(10)  -- Default clicks per second
+end)
+
+-- Toggle UI visibility handler
+toggleButton.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible
+    toggleButton.Text = frame.Visible and "Hide UI" or "Show UI"
+end)
+
+-- Sound effects for enable/disable
+local clickSound = Instance.new("Sound")
+clickSound.SoundId = "rbxassetid://123456789"  -- Add a real sound ID
+clickSound.Parent = screenGui
+
+-- Play sound when enabling auto-clicker
+enableButton.MouseButton1Click:Connect(function()
+    clickSound:Play()
+end)
+
+-- Customizable click target (example of customization)
+local clickTarget = workspace:WaitForChild("ClickTargetPart")  -- You can change this to any part you'd like
