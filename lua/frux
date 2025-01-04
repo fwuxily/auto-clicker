@@ -27,7 +27,7 @@ enableButton.Size = UDim2.new(1, 0, 0, 50)
 enableButton.Position = UDim2.new(0, 0, 0.1, 0)
 enableButton.Text = "Enable Auto Clicker"
 enableButton.TextColor3 = Color3.new(1, 1, 1)
-enableButton.BackgroundColor3 = Color3.new(0, 1, 0)
+enableButton.BackgroundColor3 = Color3.new(0, 1, 0) -- Green color for enabled state
 enableButton.Font = Enum.Font.GothamBold
 enableButton.TextSize = 18
 enableButton.Parent = frame
@@ -38,7 +38,7 @@ disableButton.Size = UDim2.new(1, 0, 0, 50)
 disableButton.Position = UDim2.new(0, 0, 0.2, 0)
 disableButton.Text = "Disable Auto Clicker"
 disableButton.TextColor3 = Color3.new(1, 1, 1)
-disableButton.BackgroundColor3 = Color3.new(1, 0, 0)
+disableButton.BackgroundColor3 = Color3.new(1, 0, 0) -- Red color for disabled state
 disableButton.Font = Enum.Font.GothamBold
 disableButton.TextSize = 18
 disableButton.Parent = frame
@@ -96,7 +96,8 @@ intervalSlider.InputChanged:Connect(function(input)
         newPos = math.clamp(newPos, 0, sliderBackground.AbsoluteSize.X - intervalSlider.AbsoluteSize.X)
         intervalSlider.Position = UDim2.new(0, newPos, 0, 0)
         -- Update the interval value based on the position
-        intervalLabel.Text = "Interval: " .. tostring(math.round((newPos / sliderBackground.AbsoluteSize.X) * 10) / 10) .. " seconds"
+        local interval = (newPos / sliderBackground.AbsoluteSize.X) * 10
+        intervalLabel.Text = "Interval: " .. string.format("%.1f", interval / 10) .. " seconds"
     end
 end)
 
@@ -110,7 +111,7 @@ end)
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 100, 0, 50)
 toggleButton.Position = UDim2.new(0.5, -50, 0, 20)
-toggleButton.Text = "Toggle UI"
+toggleButton.Text = "Show UI"
 toggleButton.TextColor3 = Color3.new(1, 1, 1)
 toggleButton.BackgroundColor3 = Color3.new(0.4, 0.4, 0.4)
 toggleButton.Font = Enum.Font.GothamBold
@@ -139,8 +140,8 @@ local function startAutoClicker(clicksPerSecond)
     -- Calculate the interval between clicks based on clicks per second
     local interval = 1 / clicksPerSecond
 
-    -- Start the click loop
-    local success, err = safeCall(function()
+    -- Create a coroutine to run the click loop
+    autoClickerTask = coroutine.create(function()
         while autoClickerEnabled do
             print("[DEBUG]: Auto-clicking...")  -- Placeholder for actual clicking logic
             -- Example: game.ReplicatedStorage:FireServer("Click")
@@ -148,23 +149,18 @@ local function startAutoClicker(clicksPerSecond)
         end
     end)
 
-    if not success then
-        print("[ERROR]: Failed to start auto clicker - " .. err)
-    end
+    -- Start the coroutine
+    coroutine.resume(autoClickerTask)
 end
 
 -- Function to stop the auto clicker
 local function stopAutoClicker()
     print("[DEBUG]: Stopping auto clicker")
-    if autoClickerTask then
-        local success, err = safeCall(function()
-            autoClickerTask:Disconnect()  -- Stop the auto-clicker task
-            autoClickerTask = nil
-        end)
-
-        if not success then
-            print("[ERROR]: Failed to stop auto clicker - " .. err)
-        end
+    if autoClickerEnabled and autoClickerTask then
+        -- Stop the loop by disabling autoClickerEnabled
+        autoClickerEnabled = false
+        coroutine.yield(autoClickerTask)  -- This stops the coroutine
+        autoClickerTask = nil
     end
 end
 
@@ -179,7 +175,7 @@ disableButton.MouseButton1Click:Connect(function()
     -- Update the button text and icon with error handling
     local success, err = safeCall(function()
         enableButton.Text = "Enable Auto Clicker"
-        enableButton.ImageColor3 = Color3.new(0, 1, 0) -- Green color for enabled state
+        enableButton.BackgroundColor3 = Color3.new(0, 1, 0) -- Green color for enabled state
     end)
 
     if not success then
@@ -201,20 +197,4 @@ enableButton.MouseButton1Click:Connect(function()
     -- Update the button text and icon with error handling
     local success, err = safeCall(function()
         enableButton.Text = "Disable Auto Clicker"
-        enableButton.ImageColor3 = Color3.new(1, 0, 0) -- Red color for disabled state
-    end)
-
-    if not success then
-        print("[ERROR]: Failed to update button UI - " .. err)
-    end
-
-    -- Start the auto clicker task
-    startAutoClicker(10)  -- Default to 10 clicks per second
-end)
-
--- Toggle UI button handler
-toggleButton.MouseButton1Click:Connect(function()
-    frame.Visible = not frame.Visible  -- Toggle visibility
-end)
-
-print("[DEBUG]: Script Loaded")
+        enableButton.BackgroundColor3 = Color3.new(1, 0, 0) -- Red color for disabled state
