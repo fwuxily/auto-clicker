@@ -43,17 +43,6 @@ disableButton.Font = Enum.Font.GothamBold
 disableButton.TextSize = 18
 disableButton.Parent = frame
 
--- Create the clicks per second label
-local clicksPerSecondLabel = Instance.new("TextLabel")
-clicksPerSecondLabel.Size = UDim2.new(1, 0, 0, 40)
-clicksPerSecondLabel.Position = UDim2.new(0, 0, 0.4, 0)
-clicksPerSecondLabel.Text = "Clicks per second: 10"
-clicksPerSecondLabel.TextColor3 = Color3.new(1, 1, 1)
-clicksPerSecondLabel.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-clicksPerSecondLabel.Font = Enum.Font.Gotham
-clicksPerSecondLabel.TextSize = 18
-clicksPerSecondLabel.Parent = frame
-
 -- Create the interval label
 local intervalLabel = Instance.new("TextLabel")
 intervalLabel.Size = UDim2.new(1, 0, 0, 40)
@@ -107,7 +96,68 @@ intervalSlider.InputEnded:Connect(function(input)
     end
 end)
 
--- Create the toggle button to open/close the UI
+-- Create the clicks per second label
+local clicksPerSecondLabel = Instance.new("TextLabel")
+clicksPerSecondLabel.Size = UDim2.new(1, 0, 0, 40)
+clicksPerSecondLabel.Position = UDim2.new(0, 0, 0.4, 0)
+clicksPerSecondLabel.Text = "Clicks per second: 10"  -- Default value
+clicksPerSecondLabel.TextColor3 = Color3.new(1, 1, 1)
+clicksPerSecondLabel.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+clicksPerSecondLabel.Font = Enum.Font.Gotham
+clicksPerSecondLabel.TextSize = 18
+clicksPerSecondLabel.Parent = frame
+
+-- Create the clicks per second slider background
+local clicksPerSecondSliderBackground = Instance.new("Frame")
+clicksPerSecondSliderBackground.Size = UDim2.new(1, 0, 0, 10)
+clicksPerSecondSliderBackground.Position = UDim2.new(0, 0, 0.5, 0)
+clicksPerSecondSliderBackground.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+clicksPerSecondSliderBackground.Parent = frame
+
+-- Create the clicks per second slider
+local clicksPerSecondSlider = Instance.new("Frame")
+clicksPerSecondSlider.Size = UDim2.new(0.1, 0, 0, 10)
+clicksPerSecondSlider.Position = UDim2.new(0, 0, 0, 0)
+clicksPerSecondSlider.BackgroundColor3 = Color3.new(0, 1, 0)
+clicksPerSecondSlider.Parent = clicksPerSecondSliderBackground
+
+-- Function to handle dragging the clicks per second slider
+local clicksPerSecondDragStart = nil
+local clicksPerSecondStartPos = nil
+
+clicksPerSecondSlider.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        clicksPerSecondDragStart = input.Position
+        clicksPerSecondStartPos = clicksPerSecondSlider.Position
+    end
+end)
+
+clicksPerSecondSlider.InputChanged:Connect(function(input)
+    if clicksPerSecondDragStart then
+        local delta = input.Position - clicksPerSecondDragStart
+        local newPos = clicksPerSecondStartPos.X.Offset + delta.X
+        newPos = math.clamp(newPos, 0, clicksPerSecondSliderBackground.AbsoluteSize.X - clicksPerSecondSlider.AbsoluteSize.X)
+        clicksPerSecondSlider.Position = UDim2.new(0, newPos, 0, 0)
+
+        -- Update the clicks per second value based on the position
+        local clicksPerSecond = math.floor((newPos / clicksPerSecondSliderBackground.AbsoluteSize.X) * 100)
+        clicksPerSecondLabel.Text = "Clicks per second: " .. tostring(clicksPerSecond)
+
+        -- Update the auto clicker's speed
+        if autoClickerEnabled then
+            stopAutoClicker()
+            startAutoClicker(clicksPerSecond)
+        end
+    end
+end)
+
+clicksPerSecondSlider.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        clicksPerSecondDragStart = nil
+    end
+end)
+
+-- Toggle button to show/hide UI
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 100, 0, 50)
 toggleButton.Position = UDim2.new(0.5, -50, 0, 20)
@@ -206,8 +256,8 @@ enableButton.MouseButton1Click:Connect(function()
         print("[ERROR]: Failed to update button UI - " .. err)
     end
 
-    -- Start the auto clicker task
-    startAutoClicker(10)  -- Default clicks per second
+    -- Start the auto clicker task with default speed (10 clicks per second)
+    startAutoClicker(10)
 end)
 
 -- Toggle UI visibility handler
