@@ -278,3 +278,72 @@ end)
 
 -- Customizable click target (example of customization)
 local clickTarget = workspace:WaitForChild("ClickTargetPart")  -- You can change this to any part you'd like
+
+-- Theme definitions (can be extended)
+local themes = {
+    Dark = {
+        BackgroundColor = Color3.new(0.1, 0.1, 0.1),
+        TitleBackground = Color3.new(0.2, 0.2, 0.2),
+        ButtonBackground = Color3.new(0, 1, 0),  -- Green for enabled state
+        ButtonTextColor = Color3.new(1, 1, 1),
+        TextColor = Color3.new(1, 1, 1),
+        IntervalBackground = Color3.new(0.2, 0.2, 0.2),
+        SliderBackground = Color3.new(0.2, 0.2, 0.2),
+        SliderHandle = Color3.new(0, 1, 0)
+    },
+    Light = {
+        BackgroundColor = Color3.new(1, 1, 1),
+        TitleBackground = Color3.new(0.8, 0.8, 0.8),
+        ButtonBackground = Color3.new(0, 1, 0),
+        ButtonTextColor = Color3.new(0, 0, 0),
+        TextColor = Color3.new(0, 0, 0),
+        IntervalBackground = Color3.new(0.8, 0.8, 0.8),
+        SliderBackground = Color3.new(0.8, 0.8, 0.8),
+        SliderHandle = Color3.new(0, 1, 0)
+    }
+}
+
+-- Default theme is Dark
+local currentTheme = themes.Dark
+
+-- Function to apply a theme
+local function applyTheme(theme)
+    -- Apply colors to all UI elements based on the theme
+    frame.BackgroundColor3 = theme.BackgroundColor
+    titleLabel.BackgroundColor3 = theme.TitleBackground
+    titleLabel.TextColor3 = theme.TextColor
+    enableButton.BackgroundColor3 = theme.ButtonBackground
+    enableButton.TextColor3 = theme.ButtonTextColor
+    disableButton.BackgroundColor3 = Color3.new(1, 0, 0) -- Red for disabled state
+    disableButton.TextColor3 = theme.ButtonTextColor
+    intervalLabel.TextColor3 = theme.TextColor
+    clicksPerSecondLabel.TextColor3 = theme.TextColor
+    sliderBackground.BackgroundColor3 = theme.SliderBackground
+    intervalSlider.BackgroundColor3 = theme.SliderHandle
+    clicksPerSecondSliderBackground.BackgroundColor3 = theme.SliderBackground
+    clicksPerSecondSlider.BackgroundColor3 = theme.SliderHandle
+end
+
+-- Create a theme toggle button
+local themeToggleButton = Instance.new("TextButton")
+themeToggleButton.Size = UDim2.new(0, 100, 0, 50)
+themeToggleButton.Position = UDim2.new(0.5, -50, 0, 80)
+themeToggleButton.Text = "Toggle Theme"
+themeToggleButton.TextColor3 = Color3.new(1, 1, 1)
+themeToggleButton.BackgroundColor3 = Color3.new(0.4, 0.4, 0.4)
+themeToggleButton.Font = Enum.Font.GothamBold
+themeToggleButton.TextSize = 18
+themeToggleButton.Parent = screenGui
+
+-- Toggle the theme when the button is clicked
+themeToggleButton.MouseButton1Click:Connect(function()
+    if currentTheme == themes.Dark then
+        currentTheme = themes.Light
+    else
+        currentTheme = themes.Dark
+    end
+    applyTheme(currentTheme)
+end)
+
+-- Apply the default theme (Dark)
+applyTheme(currentTheme)
