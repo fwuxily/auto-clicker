@@ -21,6 +21,17 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 24
 titleLabel.Parent = frame
 
+-- Add creator message
+local creatorMessage = Instance.new("TextLabel")
+creatorMessage.Size = UDim2.new(1, 0, 0, 30)
+creatorMessage.Position = UDim2.new(0, 0, 1, -30)
+creatorMessage.Text = "Created by: YourDiscordUsername"
+creatorMessage.TextColor3 = Color3.new(0.5, 0.5, 0.5)
+creatorMessage.BackgroundTransparency = 1
+creatorMessage.TextSize = 14
+creatorMessage.Font = Enum.Font.Gotham
+creatorMessage.Parent = frame
+
 -- Create the enable button
 local enableButton = Instance.new("TextButton")
 enableButton.Size = UDim2.new(1, 0, 0, 50)
@@ -294,7 +305,7 @@ local themes = {
     Light = {
         BackgroundColor = Color3.new(1, 1, 1),
         TitleBackground = Color3.new(0.8, 0.8, 0.8),
-        ButtonBackground = Color3.new(0, 1, 0),
+        ButtonBackground = Color3.new(0, 1, 0),  -- Green for enabled state
         ButtonTextColor = Color3.new(0, 0, 0),
         TextColor = Color3.new(0, 0, 0),
         IntervalBackground = Color3.new(0.8, 0.8, 0.8),
@@ -303,47 +314,40 @@ local themes = {
     }
 }
 
--- Default theme is Dark
+-- Set the theme to Dark by default
 local currentTheme = themes.Dark
+frame.BackgroundColor3 = currentTheme.BackgroundColor
+titleLabel.BackgroundColor3 = currentTheme.TitleBackground
+enableButton.BackgroundColor3 = currentTheme.ButtonBackground
+enableButton.TextColor3 = currentTheme.ButtonTextColor
+disableButton.BackgroundColor3 = Color3.new(1, 0, 0)  -- Red for disabled state
+clicksPerSecondLabel.TextColor3 = currentTheme.TextColor
+intervalLabel.TextColor3 = currentTheme.TextColor
+sliderBackground.BackgroundColor3 = currentTheme.SliderBackground
+intervalSlider.BackgroundColor3 = currentTheme.SliderHandle
+clicksPerSecondSliderBackground.BackgroundColor3 = currentTheme.SliderBackground
+clicksPerSecondSlider.BackgroundColor3 = currentTheme.SliderHandle
 
--- Function to apply a theme
-local function applyTheme(theme)
-    -- Apply colors to all UI elements based on the theme
-    frame.BackgroundColor3 = theme.BackgroundColor
-    titleLabel.BackgroundColor3 = theme.TitleBackground
-    titleLabel.TextColor3 = theme.TextColor
-    enableButton.BackgroundColor3 = theme.ButtonBackground
-    enableButton.TextColor3 = theme.ButtonTextColor
-    disableButton.BackgroundColor3 = Color3.new(1, 0, 0) -- Red for disabled state
-    disableButton.TextColor3 = theme.ButtonTextColor
-    intervalLabel.TextColor3 = theme.TextColor
-    clicksPerSecondLabel.TextColor3 = theme.TextColor
-    sliderBackground.BackgroundColor3 = theme.SliderBackground
-    intervalSlider.BackgroundColor3 = theme.SliderHandle
-    clicksPerSecondSliderBackground.BackgroundColor3 = theme.SliderBackground
-    clicksPerSecondSlider.BackgroundColor3 = theme.SliderHandle
-end
+-- Loading screen (optional)
+local loadingScreen = Instance.new("ScreenGui")
+loadingScreen.Name = "LoadingScreen"
+loadingScreen.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 
--- Create a theme toggle button
-local themeToggleButton = Instance.new("TextButton")
-themeToggleButton.Size = UDim2.new(0, 100, 0, 50)
-themeToggleButton.Position = UDim2.new(0.5, -50, 0, 80)
-themeToggleButton.Text = "Toggle Theme"
-themeToggleButton.TextColor3 = Color3.new(1, 1, 1)
-themeToggleButton.BackgroundColor3 = Color3.new(0.4, 0.4, 0.4)
-themeToggleButton.Font = Enum.Font.GothamBold
-themeToggleButton.TextSize = 18
-themeToggleButton.Parent = screenGui
+local loadingFrame = Instance.new("Frame")
+loadingFrame.Size = UDim2.new(1, 0, 1, 0)
+loadingFrame.BackgroundColor3 = Color3.new(0.1, 0.1, 0.1)
+loadingFrame.Parent = loadingScreen
 
--- Toggle the theme when the button is clicked
-themeToggleButton.MouseButton1Click:Connect(function()
-    if currentTheme == themes.Dark then
-        currentTheme = themes.Light
-    else
-        currentTheme = themes.Dark
-    end
-    applyTheme(currentTheme)
-end)
+local loadingText = Instance.new("TextLabel")
+loadingText.Size = UDim2.new(1, 0, 0, 50)
+loadingText.Position = UDim2.new(0, 0, 0.5, -25)
+loadingText.Text = "Loading Auto Clicker..."
+loadingText.TextColor3 = Color3.new(1, 1, 1)
+loadingText.BackgroundTransparency = 1
+loadingText.TextSize = 24
+loadingText.Font = Enum.Font.Gotham
+loadingText.Parent = loadingFrame
 
--- Apply the default theme (Dark)
-applyTheme(currentTheme)
+-- Hide loading screen after 2 seconds
+wait(2)
+loadingScreen:Destroy()
